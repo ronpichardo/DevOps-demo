@@ -25,8 +25,8 @@ $ pip -r install requirements.txt
 $ python app.py
 ```
 
-Setting up Terraform for DigitalOcean
-Below are the sequence of commands to run for configuring the DigitalOcean platform as a provider\n
+## Setting up Terraform for DigitalOcean
+Below are the sequence of commands to run for configuring the DigitalOcean platform as a provider.
 If you do not run into any errors, your last terraform command will ask you if you want to proceed, enter in "yes"
 
 Once the deployment is complete, you can type `terraform show terraform.tfstate` to get the ipv4 addresses from the servers that are now running with Apache.
