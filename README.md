@@ -24,7 +24,23 @@ TODO:
     - A DigitalOcean Personal Access Token, which you can create via the DigitalOcean control panel. Instructions to do that can be found in this link: https://www.digitalocean.com/community/tutorials/how-to-use-the-digitalocean-api-v2#HowToGenerateaPersonalAccessToken
     - A password-less SSH key added to your DigitalOcean account(we'll need this for Ansible and Jenkins), which you can do by following this link(reminder when you add the key, name it terraform as that is how it is configured in the Terraform files): https://www.digitalocean.com/community/tutorials/how-to-use-ssh-keys-with-digitalocean-droplets
 
-2. Docker installed on your computer or Virtual Environment (I have Docker running on a Debian instance on a Proxmox virtualization server)
+2. Setting up Terraform for DigitalOcean
+    Below are the sequence of commands to run for configuring the DigitalOcean platform as a provider.
+    If you do not run into any errors, your last terraform command will ask you if you want to proceed, enter in "yes"
+
+    Once the deployment is complete, you can type `terraform show terraform.tfstate` to get the ipv4 addresses from the servers that are now running with Apache.
+
+    Before proceeding to following the commands, you will need to sign into DigitalOcean and get an API to replace the `TOKEN_FROM_DO_API` value.
+
+    ```shell
+    export DOTOKEN="TOKEN_FROM_DO_API"
+    cd terraservers
+    terraform init
+    terraform plan -var "DIGOCTOKEN=${DOTOKEN}" -var "MY_KEY=$HOME/.ssh/id_rsa"
+    terraform apply -var "DIGOCTOKEN=${DOTOKEN}" -var "MY_KEY=$HOME/.ssh/id_rsa"
+    ```
+
+3. Docker installed on your computer or Virtual Environment (I have Docker running on a Debian instance on a Proxmox virtualization server)
 
     - Docker(Links for installing in Windows/MacOS/Linux) - https://docs.docker.com/get-docker/
     ![image](https://user-images.githubusercontent.com/63974878/110734474-e5f5e480-81f5-11eb-8d26-901194df3e01.png)
@@ -32,14 +48,14 @@ TODO:
     - Docker-Compose - https://docs.docker.com/compose/install/
     ![image](https://user-images.githubusercontent.com/63974878/110734570-15a4ec80-81f6-11eb-9066-856abec5211f.png)
 
-3. Jenkins is also required as the CI/CD tool that will be used to monitor your Git Repo.  To avoid building a new Virtual Machine in Proxmox, I installed Jenkins as a Docker Container.
+4. Jenkins is also required as the CI/CD tool that will be used to monitor your Git Repo.  To avoid building a new Virtual Machine in Proxmox, I installed Jenkins as a Docker Container.
 
     - On the VM running Docker, create a file path to map to Jenkins in Docker(I created a folder on root in the Debian server named `dockerdata` and then a folder inside `dockerdata` named `jenkins` for ease of use).
     Once the path is created, you can run the following command
     ```shell
     $ sudo mkdir -p /dockerdata/jenkins
     $ docker run -d -p 8080:8080 -v /dockerdata/jenkins:/var/jenkins_home --name jenkins-demo jenkins/jenkins:lts
-    $ cp .ssh/dosshkey /dockerdata/jenkins/jenkins_home/
+    $ cp .ssh/id_rsa /dockerdata/jenkins/jenkins_home/
     ```
     - Install Ansible inside of the Docker container, first we connect to a interactive bash terminal using `exec -it` command on the running Jenkins Container, and then install Ansible
     ```shell
@@ -50,7 +66,7 @@ TODO:
     jenkins-demo# sudo apt-get install -y ansible
     ```
 
-4. Configure Ansible to deploy from the Jenkins container to the 3 webservers once a change is made on the Git Repo
+5. Configure Ansible to deploy from the Jenkins container to the 3 webservers once a change is made on the Git Repo
     - Once you have the 3 webserver IP addresses from the terraform results, we add them to the `/etc/ansible/hosts` file, and also map the sshkey that we copied into the container from the previous steps
     ```shell
     [webservers]
@@ -70,21 +86,5 @@ $ python3 -m venv venv
 $ source venv/bin/activate
 $ pip -r install requirements.txt
 $ python app.py
-```
-
-## Setting up Terraform for DigitalOcean
-Below are the sequence of commands to run for configuring the DigitalOcean platform as a provider.
-If you do not run into any errors, your last terraform command will ask you if you want to proceed, enter in "yes"
-
-Once the deployment is complete, you can type `terraform show terraform.tfstate` to get the ipv4 addresses from the servers that are now running with Apache.
-
-Before proceeding to following the commands, you will need to sign into DigitalOcean and get an API to replace the `TOKEN_FROM_DO_API` value.
-
-```shell
-export DOTOKEN="TOKEN_FROM_DO_API"
-cd terraservers
-terraform init
-terraform plan -var "DIGOCTOKEN=${DOTOKEN}" -var "MY_KEY=$HOME/.ssh/id_rsa"
-terraform apply -var "DIGOCTOKEN=${DOTOKEN}" -var "MY_KEY=$HOME/.ssh/id_rsa"
 ```
 
